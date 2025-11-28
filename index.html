@@ -1,0 +1,1694 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Калькулятор наклеек</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #5865F2;
+            --primary-hover: #4752C4;
+            --primary-light: #7983F5;
+            --success: #3BA55C;
+            --success-hover: #339b4f;
+            --danger: #ED4245;
+            --warning: #FF9500;
+            --bg: #F0F2F5;
+            --surface: #FFFFFF;
+            --surface-2: #F8F9FA;
+            --surface-3: #E3E5E8;
+            --border: #D1D5DB;
+            --text: #1A1D21;
+            --text-muted: #6B7280;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.12);
+            --shadow-lg: 0 10px 25px rgba(0,0,0,0.07), 0 5px 10px rgba(0,0,0,0.05);
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            padding: 12px;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .product-selector {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .product-selector-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--surface-2);
+        }
+
+        .product-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .product-card {
+            background: linear-gradient(135deg, var(--surface-2), var(--surface-3));
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .product-card:hover {
+            background: linear-gradient(135deg, #ffffff, #f1f3f5);
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(88, 101, 242, 0.15);
+        }
+
+        .product-card.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            border-color: var(--primary-hover);
+            color: white;
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.3);
+        }
+
+        .product-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .product-name {
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .sub-product-selector {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .sub-product-btn {
+            padding: 8px;
+            background: var(--surface-2);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sub-product-btn:hover {
+            background: var(--surface-3);
+            border-color: var(--primary-light);
+        }
+
+        .sub-product-btn.active {
+            background: var(--primary);
+            border-color: var(--primary-hover);
+            color: white;
+        }
+
+        .params-block {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow);
+            display: none;
+        }
+
+        .params-block.active {
+            display: block;
+        }
+
+        .block-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--surface-2);
+        }
+
+        .params-section {
+            background: var(--surface-2);
+            border-radius: var(--radius-sm);
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+
+        .section-label {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 6px;
+            opacity: 0.7;
+        }
+
+        .params-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+        }
+
+        .param-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .param-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .param-input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 2px solid var(--surface-3);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s;
+            background: var(--surface);
+            color: var(--text);
+        }
+
+        .param-input:hover {
+            border-color: var(--primary-light);
+        }
+
+        .param-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.15);
+            background: var(--surface-2);
+        }
+
+        .sticker-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px;
+            margin-bottom: 6px;
+            position: relative;
+        }
+
+        .sticker-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .sticker-item-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .remove-sticker-btn {
+            width: 20px;
+            height: 20px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .remove-sticker-btn:hover {
+            background: #d63638;
+            transform: scale(1.1);
+        }
+
+        .add-sticker-btn {
+            width: 100%;
+            padding: 8px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .add-sticker-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .info-note {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-top: 4px;
+        }
+
+        .quick-quantities {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .quantities-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--surface-2);
+        }
+
+        .quantities-title {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .quantities-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+
+        .qty-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border: 2px solid #cbd5e0;
+            border-radius: var(--radius-sm);
+            padding: 6px 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            position: relative;
+        }
+
+        .qty-card:hover {
+            background: linear-gradient(135deg, #ffffff, #f1f3f5);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(88, 101, 242, 0.2);
+        }
+
+        .qty-card.selected {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            border-color: var(--primary-hover);
+            color: white;
+            box-shadow: 0 4px 12px rgba(88, 101, 242, 0.35);
+        }
+
+        .qty-value {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .qty-price {
+            font-size: 9px;
+            margin-bottom: 2px;
+            font-weight: 500;
+        }
+
+        .qty-total {
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            padding: 2px;
+        }
+
+        .qty-discount {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--success);
+            color: white;
+            font-size: 8px;
+            font-weight: 700;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .qty-card.selected .qty-value,
+        .qty-card.selected .qty-price,
+        .qty-card.selected .qty-total {
+            color: white;
+        }
+
+        .combined-block {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: stretch;
+        }
+
+        .actions-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 10px;
+            box-shadow: var(--shadow);
+        }
+
+        .result-block {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            border-radius: var(--radius);
+            padding: 10px 16px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(88, 101, 242, 0.25);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-width: 180px;
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            font-size: 9px;
+            opacity: 0.85;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .result-value {
+            font-size: 16px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .cart-button {
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            padding: 0 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(59, 165, 92, 0.25);
+            white-space: nowrap;
+        }
+
+        .cart-button:hover {
+            background: var(--success-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 165, 92, 0.35);
+        }
+
+        .copy-all-btn {
+            padding: 6px 12px;
+            background: var(--surface-2);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-muted);
+        }
+
+        .copy-all-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--text);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            animation: slideIn 0.3s;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .combined-block {
+                grid-template-columns: 1fr;
+            }
+
+            .result-block {
+                order: -1;
+            }
+
+            .quantities-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .product-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Выбор типа продукта -->
+        <div class="product-selector">
+            <div class="product-selector-title">ВЫБЕРИТЕ ТИП НАКЛЕЙКИ</div>
+            <div class="product-cards">
+                <div class="product-card active" data-product="standard">
+                    <div class="product-icon">🏷️</div>
+                    <div class="product-name">Наклейки</div>
+                </div>
+                <div class="product-card" data-product="3d">
+                    <div class="product-icon">💎</div>
+                    <div class="product-name">3D наклейки</div>
+                </div>
+                <div class="product-card" data-product="oracal">
+                    <div class="product-icon">✂️</div>
+                    <div class="product-name">Оракал</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- СТАНДАРТНЫЕ НАКЛЕЙКИ -->
+        <div class="params-block active" id="standard-params">
+            <div class="block-title">ПАРАМЕТРЫ НАКЛЕЕК</div>
+
+            <div class="params-section">
+                <div class="section-label">Основные параметры</div>
+                <div class="params-grid">
+                    <div class="param-group">
+                        <label class="param-label">Размер</label>
+                        <select class="param-input" id="standardSizePreset">
+                            <option value="custom">Свой размер</option>
+                            <optgroup label="Квадратные">
+                                <option value="10x10">10×10 мм</option>
+                                <option value="20x20">20×20 мм</option>
+                                <option value="30x30">30×30 мм</option>
+                                <option value="40x40">40×40 мм</option>
+                                <option value="50x50" selected>50×50 мм</option>
+                                <option value="60x60">60×60 мм</option>
+                                <option value="70x70">70×70 мм</option>
+                                <option value="80x80">80×80 мм</option>
+                                <option value="90x90">90×90 мм</option>
+                                <option value="100x100">100×100 мм</option>
+                            </optgroup>
+                            <optgroup label="Прямоугольные">
+                                <option value="20x30">20×30 мм</option>
+                                <option value="30x40">30×40 мм</option>
+                                <option value="40x50">40×50 мм</option>
+                                <option value="50x70">50×70 мм</option>
+                                <option value="60x40">60×40 мм</option>
+                                <option value="60x90">60×90 мм</option>
+                                <option value="70x100">70×100 мм</option>
+                                <option value="80x50">80×50 мм</option>
+                                <option value="90x50">90×50 мм</option>
+                                <option value="100x70">100×70 мм</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="param-group">
+                        <label class="param-label">Материал</label>
+                        <select class="param-input" id="material">
+                            <option value="mat">Пленка матовая</option>
+                            <option value="gloss">Пленка глянцевая</option>
+                            <option value="transp">Пленка прозр.</option>
+                            <option value="mat_gl_lam">Пленка мат/гл с лам.</option>
+                            <option value="transp_lam">Пленка прозр. с лам.</option>
+                            <option value="paper_self">Бумажная самоклейка</option>
+                        </select>
+                    </div>
+                    <div class="param-group">
+                        <label class="param-label">Количество</label>
+                        <input type="number" class="param-input" id="standardQuantity" min="1" max="100000" value="100" placeholder="шт">
+                    </div>
+                </div>
+                <div class="params-grid" id="standardCustomSizeFields" style="display: none; margin-top: 8px;">
+                    <div class="param-group">
+                        <label class="param-label">Ширина, мм</label>
+                        <input type="number" class="param-input" id="itemWidth" min="5" max="2000" value="50" placeholder="мм">
+                    </div>
+                    <div class="param-group">
+                        <label class="param-label">Высота, мм</label>
+                        <input type="number" class="param-input" id="itemHeight" min="5" max="2000" value="50" placeholder="мм">
+                    </div>
+                </div>
+            </div>
+
+            <div class="params-section">
+                <div class="section-label">Тип расчета</div>
+                <div class="params-grid">
+                    <div class="param-group">
+                        <label class="param-label">Тип расчёта</label>
+                        <select class="param-input" id="pricingType">
+                            <option value="retail">Розница (1200₽/лист)</option>
+                            <option value="opt1">Опт1 (850₽/лист)</option>
+                            <option value="opt2">Опт2 (650₽/лист)</option>
+                            <option value="opt3">Опт3 (550₽/лист)</option>
+                            <option value="dynamic">Динамический</option>
+                        </select>
+                    </div>
+                    <div class="param-group">
+                        <label class="param-label">Своя цена (₽/шт)</label>
+                        <input type="number" class="param-input" id="customPriceStandard" placeholder="Авто" step="0.01">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3D НАКЛЕЙКИ -->
+        <div class="params-block" id="3d-params">
+            <div class="block-title">ПАРАМЕТРЫ 3D НАКЛЕЕК</div>
+
+            <div class="sub-product-selector">
+                <button class="sub-product-btn active" data-subtype="standard">3D Стандарт</button>
+                <button class="sub-product-btn" data-subtype="stickerpacks">3D Стикерпаки</button>
+            </div>
+
+            <!-- 3D Стандарт -->
+            <div id="3d-standard-params" style="margin-top: 10px;">
+                <div class="params-section">
+                    <div class="section-label">Основные параметры</div>
+                    <div class="params-grid">
+                        <div class="param-group">
+                            <label class="param-label">Размер</label>
+                            <select class="param-input" id="3dSizePreset">
+                                <option value="20x20">20×20 мм</option>
+                                <option value="25x25">25×25 мм</option>
+                                <option value="30x30" selected>30×30 мм</option>
+                                <option value="35x35">35×35 мм</option>
+                                <option value="40x40">40×40 мм</option>
+                                <option value="45x45">45×45 мм</option>
+                                <option value="50x50">50×50 мм</option>
+                                <option value="60x60">60×60 мм</option>
+                                <option value="70x70">70×70 мм</option>
+                                <option value="80x80">80×80 мм</option>
+                                <option value="custom">Индивидуальный</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">Количество</label>
+                            <input type="number" class="param-input" id="3dQuantity" min="1" max="10000" value="100" placeholder="шт">
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">Полимер</label>
+                            <select class="param-input" id="3dPolymer">
+                                <option value="premium">Премиум полимер (гибкий)</option>
+                                <option value="standard">Стандарт полимер (твёрдый)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="params-grid" id="3dCustomSizeFields" style="display: none; margin-top: 8px;">
+                        <div class="param-group">
+                            <label class="param-label">Ширина, мм</label>
+                            <input type="number" class="param-input" id="3dWidth" min="5" max="500" value="30" placeholder="мм">
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">Высота, мм</label>
+                            <input type="number" class="param-input" id="3dHeight" min="5" max="500" value="30" placeholder="мм">
+                        </div>
+                    </div>
+                </div>
+                <div class="params-section">
+                    <div class="section-label">Тип расчета</div>
+                    <div class="params-grid">
+                        <div class="param-group">
+                            <label class="param-label">Тип расчёта</label>
+                            <select class="param-input" id="3dPricingType">
+                                <option value="retail">Розница</option>
+                                <option value="opt1">Опт1 -5%</option>
+                                <option value="opt2">Опт2 -10%</option>
+                                <option value="opt3">Опт3 -15%</option>
+                                <option value="opt4">Опт4 -20%</option>
+                                <option value="opt5">Опт5 -25%</option>
+                                <option value="opt6">Опт6 -30%</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">Своя цена (₽/шт)</label>
+                            <input type="number" class="param-input" id="customPrice3D" placeholder="Авто" step="0.01">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3D Стикерпаки -->
+            <div id="3d-stickerpacks-params" style="display: none; margin-top: 10px;">
+                <div class="params-section">
+                    <div class="section-label">Тип стикерпака</div>
+                    <div class="params-grid">
+                        <div class="param-group">
+                            <label class="param-label">Формат</label>
+                            <select class="param-input" id="stickerpackPreset">
+                                <option value="1sticker">На 1 стикер (50×80 мм)</option>
+                                <option value="2stickers">На 2 стикера (60×120 мм)</option>
+                                <option value="4stickers">На 4 стикера (80×140 мм)</option>
+                                <option value="a6">Формат A6 (105×148 мм) - на 6 стикеров</option>
+                                <option value="a5">Формат A5 (210×148 мм) - на 8 стикеров</option>
+                                <option value="custom">Индивидуальный</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">Количество паков</label>
+                            <input type="number" class="param-input" id="packsQuantity" min="1" max="10000" value="100" placeholder="шт">
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">Полимер для стикеров</label>
+                            <select class="param-input" id="packsPolymer">
+                                <option value="premium">Премиум полимер (5₽/см²)</option>
+                                <option value="standard">Стандарт полимер (3.5₽/см²)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="params-section" id="customSubstrateSection" style="display: none;">
+                    <div class="section-label">Параметры подложки (индивидуальные)</div>
+                    <div class="params-grid">
+                        <div class="param-group">
+                            <label class="param-label">Ширина, мм</label>
+                            <input type="number" class="param-input" id="substrateWidth" min="50" max="1000" value="100" placeholder="мм">
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">Высота, мм</label>
+                            <input type="number" class="param-input" id="substrateHeight" min="50" max="1000" value="150" placeholder="мм">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="params-section" id="customStickersSection" style="display: none;">
+                    <div class="section-label" id="stickersPolymerLabel">Стикеры на подложке (Премиум полимер - 5₽/см²)</div>
+                    <div id="stickersContainer">
+                        <div class="sticker-item">
+                            <div class="sticker-item-header">
+                                <span class="sticker-item-title">Стикер 1</span>
+                            </div>
+                            <div class="params-grid">
+                                <div class="param-group">
+                                    <label class="param-label">Ширина, мм</label>
+                                    <input type="number" class="param-input sticker-width" min="5" max="500" value="30" placeholder="мм">
+                                </div>
+                                <div class="param-group">
+                                    <label class="param-label">Высота, мм</label>
+                                    <input type="number" class="param-input sticker-height" min="5" max="500" value="30" placeholder="мм">
+                                </div>
+                                <div class="param-group">
+                                    <label class="param-label">Количество</label>
+                                    <input type="number" class="param-input sticker-count" min="1" max="100" value="1" placeholder="шт">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="add-sticker-btn" id="addStickerBtn">
+                        <span>+</span>
+                        <span>Добавить стикер</span>
+                    </button>
+                </div>
+
+                <div class="params-section">
+                    <div class="section-label">Дополнительные параметры</div>
+                    <div class="params-grid">
+                        <div class="param-group">
+                            <label class="param-label">Упаковка</label>
+                            <select class="param-input" id="packaging">
+                                <option value="no">Нет</option>
+                                <option value="yes">Да (+15₽)</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">Тип расчёта</label>
+                            <select class="param-input" id="packsPricingType">
+                                <option value="retail">Розница</option>
+                                <option value="opt1">Опт1 -5%</option>
+                                <option value="opt2">Опт2 -10%</option>
+                                <option value="opt3">Опт3 -15%</option>
+                                <option value="opt4">Опт4 -20%</option>
+                                <option value="opt5">Опт5 -25%</option>
+                                <option value="opt6">Опт6 -30%</option>
+                            </select>
+                        </div>
+                        <div class="param-group">
+                            <label class="param-label">Своя цена (₽/пак)</label>
+                            <input type="number" class="param-input" id="customPricePack" placeholder="Авто" step="0.01">
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 12px; padding: 10px; background: #f5f5f5; border-radius: 6px; font-size: 11px; color: #666;">
+                        <div style="font-weight: 600; margin-bottom: 6px; text-transform: uppercase; font-size: 10px;">Калькуляция стоимости:</div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>Подложка:</span>
+                            <span id="substrateCalcPrice">0₽</span>
+                        </div>
+                        <div id="stickersCalcContainer"></div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>Упаковка:</span>
+                            <span id="packagingCalcPrice">0₽</span>
+                        </div>
+                        <div style="border-top: 1px solid #ddd; margin-top: 6px; padding-top: 6px; display: flex; justify-content: space-between; font-weight: 600;">
+                            <span>Итого за 1 пак:</span>
+                            <span id="totalPackPrice">0₽</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ОРАКАЛ -->
+        <div class="params-block" id="oracal-params">
+            <div class="block-title">ПАРАМЕТРЫ ОРАКАЛ</div>
+
+            <div class="params-section">
+                <div class="section-label">Параметры резки</div>
+                <div class="params-grid">
+                    <div class="param-group">
+                        <label class="param-label">Тип</label>
+                        <select class="param-input" id="oracalType">
+                            <option value="with-print">С печатью</option>
+                            <option value="without-print">Без печати</option>
+                        </select>
+                    </div>
+                    <div class="param-group">
+                        <label class="param-label">Ширина, мм</label>
+                        <input type="number" class="param-input" id="oracalWidth" min="5" max="600" value="100" placeholder="мм">
+                        <div class="info-note">Максимум 600 мм</div>
+                    </div>
+                    <div class="param-group">
+                        <label class="param-label">Высота, мм</label>
+                        <input type="number" class="param-input" id="oracalHeight" min="5" max="2000" value="100" placeholder="мм">
+                    </div>
+                    <div class="param-group">
+                        <label class="param-label">Количество</label>
+                        <input type="number" class="param-input" id="oracalQuantity" min="1" max="10000" value="1" placeholder="шт">
+                    </div>
+                </div>
+            </div>
+
+            <div class="params-section">
+                <div class="section-label">Тип расчета</div>
+                <div class="params-grid">
+                    <div class="param-group">
+                        <label class="param-label">Своя цена (₽/шт)</label>
+                        <input type="number" class="param-input" id="customPriceOracal" placeholder="Авто" step="0.01">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- РЕЗУЛЬТАТЫ И КОРЗИНА -->
+        <div class="combined-block">
+            <div class="actions-section" style="display: none;">
+                <div class="param-group">
+                    <label class="param-label">Своя цена (₽/шт)</label>
+                    <input type="number" class="param-input" id="customPrice" placeholder="Авто" step="0.01">
+                </div>
+            </div>
+
+            <div class="result-block" style="grid-column: span 2;">
+                <div class="result-item">
+                    <span class="result-label">За единицу</span>
+                    <span class="result-value" id="unitPriceDisplay">0₽</span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">За тираж</span>
+                    <span class="result-value" id="totalPriceDisplay">0₽</span>
+                </div>
+            </div>
+
+            <button class="cart-button" id="cartBtn">
+                <span>📥</span>
+                <span>В корзину</span>
+            </button>
+        </div>
+
+        <!-- БЫСТРЫЙ ВЫБОР ТИРАЖА -->
+        <div class="quick-quantities" id="quickQuantities">
+            <div class="quantities-header">
+                <div class="quantities-title">БЫСТРЫЙ ВЫБОР ТИРАЖА</div>
+                <button class="copy-all-btn" id="copyBtn">
+                    📋 Копировать все
+                </button>
+            </div>
+            <div class="quantities-grid" id="quantitiesGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            'use strict';
+
+            // Глобальные переменные
+            var currentProduct = 'standard';
+            var current3DType = 'standard';
+            var selectedQuantity = 100;
+            var stickerCounter = 1;
+
+            // Цены на листы для стандартных наклеек
+            var sheetPrices = {
+                retail: 1200,
+                opt1: 850,
+                opt2: 650,
+                opt3: 550
+            };
+
+            // Коэффициенты материалов
+            var materialCoeff = {
+                mat: 1.0,        // Пленка матовая
+                gloss: 1.0,      // Пленка глянцевая
+                transp: 1.15,
+                mat_gl_lam: 1.4,
+                transp_lam: 1.5,
+                paper_self: 0.5
+            };
+
+            // Динамические цены
+            var dynamicPrices = {
+                50: 1200,
+                100: 1000,
+                200: 850,
+                500: 700,
+                1000: 600,
+                2000: 550,
+                5000: 500
+            };
+
+            // Цены на 3D полимеры
+            var pricing3D = {
+                premium: 5.0,
+                standard: 3.5
+            };
+
+            // Цены на оракал
+            var pricingOracal = {
+                'with-print': 0.25,
+                'without-print': 0.15
+            };
+
+            // Утилиты
+            function roundUpToHalf(value) {
+                return Math.ceil(value * 2) / 2;
+            }
+
+            function roundUpToTenth(value) {
+                return Math.ceil(value * 10) / 10;
+            }
+
+            function formatPrice(value) {
+                return value.toFixed(2);
+            }
+
+            function showToast(message, type) {
+                var existing = document.querySelector('.toast');
+                if (existing) existing.remove();
+
+                var toast = document.createElement('div');
+                toast.className = 'toast' + (type ? ' ' + type : '');
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                setTimeout(function() {
+                    toast.remove();
+                }, 2500);
+            }
+
+            // Обработчики выбора размеров
+            function handleStandardSizePreset() {
+                var preset = document.getElementById('standardSizePreset').value;
+                var customFields = document.getElementById('standardCustomSizeFields');
+
+                if (preset === 'custom') {
+                    customFields.style.display = 'grid';
+                } else {
+                    customFields.style.display = 'none';
+                    var dimensions = preset.split('x');
+                    if (dimensions.length === 2) {
+                        document.getElementById('itemWidth').value = dimensions[0];
+                        document.getElementById('itemHeight').value = dimensions[1];
+                    }
+                }
+                updateCalculation();
+            }
+
+            function handle3DSizePreset() {
+                var preset = document.getElementById('3dSizePreset').value;
+                var customFields = document.getElementById('3dCustomSizeFields');
+
+                if (preset === 'custom') {
+                    customFields.style.display = 'grid';
+                } else {
+                    customFields.style.display = 'none';
+                    var dimensions = preset.split('x');
+                    if (dimensions.length === 2) {
+                        document.getElementById('3dWidth').value = dimensions[0];
+                        document.getElementById('3dHeight').value = dimensions[1];
+                    }
+                }
+                updateCalculation();
+            }
+
+            function handleStickerpackPreset() {
+                var preset = document.getElementById('stickerpackPreset').value;
+                var customSubstrate = document.getElementById('customSubstrateSection');
+                var customStickers = document.getElementById('customStickersSection');
+
+                var presetConfigs = {
+                    '1sticker': {width: 50, height: 80, stickers: 1},
+                    '2stickers': {width: 60, height: 120, stickers: 2},
+                    '4stickers': {width: 80, height: 140, stickers: 4},
+                    'a6': {width: 105, height: 148, stickers: 6},
+                    'a5': {width: 210, height: 148, stickers: 8}
+                };
+
+                if (preset === 'custom') {
+                    customSubstrate.style.display = 'block';
+                    customStickers.style.display = 'block';
+
+                    document.querySelectorAll('.sticker-item').forEach(function(item) {
+                        var header = item.querySelector('.sticker-item-header');
+                        if (!header.querySelector('.remove-sticker-btn')) {
+                            var removeBtn = document.createElement('button');
+                            removeBtn.className = 'remove-sticker-btn';
+                            removeBtn.textContent = '×';
+                            removeBtn.addEventListener('click', function() {
+                                removeStickerItem(this);
+                            });
+                            header.appendChild(removeBtn);
+                        }
+                    });
+                } else {
+                    customSubstrate.style.display = 'none';
+                    customStickers.style.display = 'none';
+
+                    var config = presetConfigs[preset];
+                    if (config) {
+                        document.getElementById('substrateWidth').value = config.width;
+                        document.getElementById('substrateHeight').value = config.height;
+
+                        var container = document.getElementById('stickersContainer');
+                        container.innerHTML = '';
+                        stickerCounter = 0;
+
+                        for (var i = 1; i <= config.stickers; i++) {
+                            stickerCounter++;
+                            var stickerDiv = document.createElement('div');
+                            stickerDiv.className = 'sticker-item';
+                            stickerDiv.innerHTML =
+                                '<div class="sticker-item-header">' +
+                                    '<span class="sticker-item-title">Стикер ' + i + '</span>' +
+                                '</div>' +
+                                '<div class="params-grid">' +
+                                    '<div class="param-group">' +
+                                        '<label class="param-label">Ширина, мм</label>' +
+                                        '<input type="number" class="param-input sticker-width" min="5" max="500" value="30" placeholder="мм">' +
+                                    '</div>' +
+                                    '<div class="param-group">' +
+                                        '<label class="param-label">Высота, мм</label>' +
+                                        '<input type="number" class="param-input sticker-height" min="5" max="500" value="30" placeholder="мм">' +
+                                    '</div>' +
+                                    '<div class="param-group">' +
+                                        '<label class="param-label">Количество</label>' +
+                                        '<input type="number" class="param-input sticker-count" min="1" max="100" value="1" placeholder="шт">' +
+                                    '</div>' +
+                                '</div>';
+                            container.appendChild(stickerDiv);
+                        }
+
+                        document.querySelectorAll('.sticker-width, .sticker-height, .sticker-count').forEach(function(input) {
+                            input.addEventListener('input', updateCalculation);
+                        });
+                    }
+                }
+
+                updateCalculation();
+            }
+
+            // Обновление лейбла полимера
+            function updatePolymerLabel() {
+                var polymerType = document.getElementById('packsPolymer').value;
+                var pricePerCm2 = pricing3D[polymerType];
+                var label = document.getElementById('stickersPolymerLabel');
+                var polymerName = polymerType === 'premium' ? 'Премиум полимер' : 'Стандарт полимер';
+                label.textContent = 'Стикеры на подложке (' + polymerName + ' - ' + pricePerCm2 + '₽/см²)';
+            }
+
+            // Выбор продукта
+            function selectProduct(product) {
+                currentProduct = product;
+
+                document.querySelectorAll('.product-card').forEach(function(card) {
+                    card.classList.remove('active');
+                });
+                document.querySelector('[data-product="' + product + '"]').classList.add('active');
+
+                document.querySelectorAll('.params-block').forEach(function(block) {
+                    block.classList.remove('active');
+                });
+                var paramsBlock = document.getElementById(product + '-params');
+                if (paramsBlock) paramsBlock.classList.add('active');
+
+                document.getElementById('quickQuantities').style.display =
+                    product === 'standard' ? 'block' : 'none';
+
+                updateCalculation();
+            }
+
+            // Выбор типа 3D
+            function select3DType(type) {
+                current3DType = type;
+
+                document.querySelectorAll('.sub-product-btn').forEach(function(btn) {
+                    btn.classList.remove('active');
+                });
+                document.querySelector('[data-subtype="' + type + '"]').classList.add('active');
+
+                document.getElementById('3d-standard-params').style.display =
+                    type === 'standard' ? 'block' : 'none';
+                document.getElementById('3d-stickerpacks-params').style.display =
+                    type === 'stickerpacks' ? 'block' : 'none';
+
+                if (type === 'stickerpacks') {
+                    handleStickerpackPreset();
+                    updatePolymerLabel();
+                }
+
+                updateCalculation();
+            }
+
+            // Управление стикерами
+            function removeStickerItem(element) {
+                element.parentElement.parentElement.remove();
+                updateCalculation();
+            }
+
+            function addSticker() {
+                stickerCounter++;
+                var container = document.getElementById('stickersContainer');
+                var stickerDiv = document.createElement('div');
+                stickerDiv.className = 'sticker-item';
+                stickerDiv.innerHTML =
+                    '<div class="sticker-item-header">' +
+                        '<span class="sticker-item-title">Стикер ' + stickerCounter + '</span>' +
+                        '<button class="remove-sticker-btn">×</button>' +
+                    '</div>' +
+                    '<div class="params-grid">' +
+                        '<div class="param-group">' +
+                            '<label class="param-label">Ширина, мм</label>' +
+                            '<input type="number" class="param-input sticker-width" min="5" max="500" value="30" placeholder="мм">' +
+                        '</div>' +
+                        '<div class="param-group">' +
+                            '<label class="param-label">Высота, мм</label>' +
+                            '<input type="number" class="param-input sticker-height" min="5" max="500" value="30" placeholder="мм">' +
+                        '</div>' +
+                        '<div class="param-group">' +
+                            '<label class="param-label">Количество</label>' +
+                            '<input type="number" class="param-input sticker-count" min="1" max="100" value="1" placeholder="шт">' +
+                        '</div>' +
+                    '</div>';
+
+                container.appendChild(stickerDiv);
+
+                var removeBtn = stickerDiv.querySelector('.remove-sticker-btn');
+                removeBtn.addEventListener('click', function() {
+                    removeStickerItem(this);
+                });
+
+                stickerDiv.querySelectorAll('input').forEach(function(input) {
+                    input.addEventListener('input', updateCalculation);
+                });
+
+                updateCalculation();
+            }
+
+            // Получение динамической цены листа
+            function getDynamicSheetPrice(quantity) {
+                if (quantity < 50) return dynamicPrices[50];
+                if (quantity < 100) return dynamicPrices[50];
+                if (quantity < 200) return dynamicPrices[100];
+                if (quantity < 500) return dynamicPrices[200];
+                if (quantity < 1000) return dynamicPrices[500];
+                if (quantity < 2000) return dynamicPrices[1000];
+                if (quantity < 5000) return dynamicPrices[2000];
+                return dynamicPrices[5000];
+            }
+
+            // Расчеты
+            function calculateStandard() {
+                var width = parseFloat(document.getElementById('itemWidth').value) || 50;
+                var height = parseFloat(document.getElementById('itemHeight').value) || 50;
+                var quantity = parseInt(document.getElementById('standardQuantity').value) || 100;
+                var material = document.getElementById('material').value;
+                var pricingType = document.getElementById('pricingType').value;
+
+                var area = (width * height) / 100;
+                var sheetArea = 6000;
+
+                var pricePerCm2;
+
+                if (pricingType === 'dynamic') {
+                    var sheetPrice = getDynamicSheetPrice(quantity);
+                    pricePerCm2 = sheetPrice / sheetArea;
+                } else {
+                    pricePerCm2 = sheetPrices[pricingType] / sheetArea;
+                }
+
+                pricePerCm2 = pricePerCm2 * materialCoeff[material];
+
+                var pricePerUnit = roundUpToTenth(area * pricePerCm2);
+                var totalPrice = pricePerUnit * quantity;
+
+                return {
+                    unitPrice: pricePerUnit,
+                    totalPrice: totalPrice
+                };
+            }
+
+            function calculate3D() {
+                if (current3DType === 'standard') {
+                    var width = parseFloat(document.getElementById('3dWidth').value) || 30;
+                    var height = parseFloat(document.getElementById('3dHeight').value) || 30;
+                    var quantity = parseInt(document.getElementById('3dQuantity').value) || 100;
+                    var pricingType = document.getElementById('3dPricingType').value;
+                    var polymerType = document.getElementById('3dPolymer').value;
+
+                    var discount = 0;
+                    if (pricingType === 'opt1') discount = 5;
+                    else if (pricingType === 'opt2') discount = 10;
+                    else if (pricingType === 'opt3') discount = 15;
+                    else if (pricingType === 'opt4') discount = 20;
+                    else if (pricingType === 'opt5') discount = 25;
+                    else if (pricingType === 'opt6') discount = 30;
+
+                    var area = (width * height) / 100;
+                    var pricePerCm2 = pricing3D[polymerType];
+                    var pricePerUnit = area * pricePerCm2;
+                    pricePerUnit = pricePerUnit * (1 - discount / 100);
+                    pricePerUnit = roundUpToHalf(pricePerUnit);
+                    var totalPrice = pricePerUnit * quantity;
+
+                    return {
+                        unitPrice: pricePerUnit,
+                        totalPrice: totalPrice
+                    };
+                } else {
+                    // Стикерпаки
+                    var substrateWidth = parseFloat(document.getElementById('substrateWidth').value) || 100;
+                    var substrateHeight = parseFloat(document.getElementById('substrateHeight').value) || 150;
+                    var packQuantity = parseInt(document.getElementById('packsQuantity').value) || 100;
+                    var packPricingType = document.getElementById('packsPricingType').value;
+                    var packagingOption = document.getElementById('packaging').value;
+                    var polymerType = document.getElementById('packsPolymer').value;
+
+                    var packDiscount = 0;
+                    if (packPricingType === 'opt1') packDiscount = 5;
+                    else if (packPricingType === 'opt2') packDiscount = 10;
+                    else if (packPricingType === 'opt3') packDiscount = 15;
+                    else if (packPricingType === 'opt4') packDiscount = 20;
+                    else if (packPricingType === 'opt5') packDiscount = 25;
+                    else if (packPricingType === 'opt6') packDiscount = 30;
+
+                    // Подложка
+                    var substrateArea = (substrateWidth * substrateHeight) / 100;
+                    var sheetArea = 6000;
+                    var substratePricePerCm2 = 1200 / sheetArea;
+                    var substratePrice = substrateArea * substratePricePerCm2;
+
+                    // Стикеры с выбранным полимером
+                    var stickerPricePerCm2 = pricing3D[polymerType];
+                    var stickersCalcHtml = '';
+                    var totalStickerPrice = 0;
+                    var stickerIndex = 1;
+
+                    document.querySelectorAll('.sticker-item').forEach(function(item) {
+                        var w = parseFloat(item.querySelector('.sticker-width').value) || 0;
+                        var h = parseFloat(item.querySelector('.sticker-height').value) || 0;
+                        var count = parseInt(item.querySelector('.sticker-count').value) || 0;
+                        var stickerArea = (w * h * count) / 100;
+                        var stickerPrice = stickerArea * stickerPricePerCm2;
+                        totalStickerPrice += stickerPrice;
+
+                        stickersCalcHtml +=
+                            '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">' +
+                                '<span>Стикер ' + stickerIndex + ' (' + w + 'x' + h + 'мм x' + count + 'шт):</span>' +
+                                '<span>' + stickerPrice.toFixed(2) + '₽</span>' +
+                            '</div>';
+                        stickerIndex++;
+                    });
+
+                    var packagingPrice = packagingOption === 'yes' ? 15 : 0;
+                    var priceBeforeDiscount = substratePrice + totalStickerPrice + packagingPrice;
+                    var pricePerUnit = priceBeforeDiscount * (1 - packDiscount / 100);
+                    pricePerUnit = roundUpToHalf(pricePerUnit);
+                    var totalPrice = pricePerUnit * packQuantity;
+
+                    // Обновление калькуляции
+                    var substrateCalcEl = document.getElementById('substrateCalcPrice');
+                    if (substrateCalcEl) substrateCalcEl.textContent = substratePrice.toFixed(2) + '₽';
+
+                    var stickersContainer = document.getElementById('stickersCalcContainer');
+                    if (stickersContainer) stickersContainer.innerHTML = stickersCalcHtml;
+
+                    var packagingCalcEl = document.getElementById('packagingCalcPrice');
+                    if (packagingCalcEl) packagingCalcEl.textContent = packagingPrice.toFixed(2) + '₽';
+
+                    var totalPackEl = document.getElementById('totalPackPrice');
+                    if (totalPackEl) {
+                        totalPackEl.textContent = pricePerUnit.toFixed(2) + '₽' +
+                            (packDiscount > 0 ? ' (-' + packDiscount + '%)' : '');
+                    }
+
+                    return {
+                        unitPrice: pricePerUnit,
+                        totalPrice: totalPrice
+                    };
+                }
+            }
+
+            function calculateOracal() {
+                var width = parseFloat(document.getElementById('oracalWidth').value) || 100;
+                var height = parseFloat(document.getElementById('oracalHeight').value) || 100;
+                var quantity = parseInt(document.getElementById('oracalQuantity').value) || 1;
+                var type = document.getElementById('oracalType').value;
+
+                if (width > 600) {
+                    width = 600;
+                    document.getElementById('oracalWidth').value = 600;
+                }
+
+                var area = (width * height) / 100;
+                var pricePerUnit = roundUpToTenth(area * pricingOracal[type]);
+                var totalPrice = pricePerUnit * quantity;
+
+                return {
+                    unitPrice: pricePerUnit,
+                    totalPrice: totalPrice
+                };
+            }
+
+            function updateCalculation() {
+                var result = null;
+
+                if (currentProduct === 'standard') {
+                    result = calculateStandard();
+                    var customPrice = parseFloat(document.getElementById('customPriceStandard').value);
+                    if (customPrice && customPrice > 0) {
+                        var quantity = getQuantityForProduct();
+                        result.unitPrice = roundUpToTenth(customPrice);
+                        result.totalPrice = result.unitPrice * quantity;
+                    }
+                } else if (currentProduct === '3d') {
+                    result = calculate3D();
+                    if (current3DType === 'standard') {
+                        var customPrice3D = parseFloat(document.getElementById('customPrice3D').value);
+                        if (customPrice3D && customPrice3D > 0) {
+                            var quantity = getQuantityForProduct();
+                            result.unitPrice = roundUpToHalf(customPrice3D);
+                            result.totalPrice = result.unitPrice * quantity;
+                        }
+                    } else {
+                        var customPricePack = parseFloat(document.getElementById('customPricePack').value);
+                        if (customPricePack && customPricePack > 0) {
+                            var quantity = getQuantityForProduct();
+                            result.unitPrice = roundUpToHalf(customPricePack);
+                            result.totalPrice = result.unitPrice * quantity;
+                        }
+                    }
+                } else if (currentProduct === 'oracal') {
+                    result = calculateOracal();
+                    var customPrice = parseFloat(document.getElementById('customPriceOracal').value);
+                    if (customPrice && customPrice > 0) {
+                        var quantity = getQuantityForProduct();
+                        result.unitPrice = roundUpToTenth(customPrice);
+                        result.totalPrice = result.unitPrice * quantity;
+                    }
+                }
+
+                if (!result) return;
+
+                document.getElementById('unitPriceDisplay').textContent = formatPrice(result.unitPrice) + '₽';
+                document.getElementById('totalPriceDisplay').textContent = result.totalPrice.toFixed(0) + '₽';
+
+                if (currentProduct === 'standard') {
+                    updateQuickQuantities();
+                }
+            }
+
+            function getQuantityForProduct() {
+                if (currentProduct === 'standard') {
+                    return parseInt(document.getElementById('standardQuantity').value) || 100;
+                } else if (currentProduct === '3d') {
+                    if (current3DType === 'standard') {
+                        return parseInt(document.getElementById('3dQuantity').value) || 100;
+                    } else {
+                        return parseInt(document.getElementById('packsQuantity').value) || 100;
+                    }
+                } else if (currentProduct === 'oracal') {
+                    return parseInt(document.getElementById('oracalQuantity').value) || 1;
+                }
+                return 1;
+            }
+
+            function updateQuickQuantities() {
+                var grid = document.getElementById('quantitiesGrid');
+                if (!grid || currentProduct !== 'standard') return;
+
+                var quantities = [50, 100, 200, 500, 1000, 2000, 3000, 5000];
+                var html = '';
+
+                var currentQuantity = parseInt(document.getElementById('standardQuantity').value) || 100;
+                var currentPricingType = document.getElementById('pricingType').value;
+
+                quantities.forEach(function(qty) {
+                    var oldQty = document.getElementById('standardQuantity').value;
+                    document.getElementById('standardQuantity').value = qty;
+
+                    var calc;
+                    if (currentPricingType === 'dynamic') {
+                        var oldPricing = document.getElementById('pricingType').value;
+                        document.getElementById('pricingType').value = 'dynamic';
+                        calc = calculateStandard();
+                        document.getElementById('pricingType').value = oldPricing;
+                    } else {
+                        calc = calculateStandard();
+                    }
+
+                    document.getElementById('standardQuantity').value = oldQty;
+
+                    var isSelected = qty === currentQuantity ? ' selected' : '';
+
+                    var discount = '';
+                    if (currentPricingType === 'dynamic' && qty >= 100) {
+                        var basePrice = 1200;
+                        var currentSheetPrice = getDynamicSheetPrice(qty);
+                        var saving = Math.round((1 - currentSheetPrice / basePrice) * 100);
+                        if (saving > 0) {
+                            discount = '<div class="qty-discount">-' + saving + '%</div>';
+                        }
+                    }
+
+                    html += '<div class="qty-card' + isSelected + '" data-qty="' + qty + '">';
+                    html += discount;
+                    html += '<div class="qty-value">' + qty + 'шт</div>';
+                    html += '<div class="qty-price">' + formatPrice(calc.unitPrice) + '₽/шт</div>';
+                    html += '<div class="qty-total">' + calc.totalPrice.toFixed(0) + '₽</div>';
+                    html += '</div>';
+                });
+
+                grid.innerHTML = html;
+
+                grid.querySelectorAll('.qty-card').forEach(function(card) {
+                    card.addEventListener('click', function() {
+                        selectQuantity(parseInt(this.dataset.qty));
+                    });
+                });
+            }
+
+            function selectQuantity(qty) {
+                selectedQuantity = qty;
+                document.getElementById('standardQuantity').value = qty;
+                updateCalculation();
+            }
+
+            function copyAllQuantities() {
+                if (currentProduct !== 'standard') {
+                    showToast('Доступно только для стандартных наклеек');
+                    return;
+                }
+
+                var width = document.getElementById('itemWidth').value;
+                var height = document.getElementById('itemHeight').value;
+                var material = document.getElementById('material').selectedOptions[0].text;
+                var pricingType = document.getElementById('pricingType').value;
+
+                var text = '📋 Наклейки ' + width + '×' + height + 'мм • ' + material + '\n';
+
+                if (pricingType === 'dynamic') {
+                    text += 'Расчёт: 👇\n';
+                } else {
+                    text += document.getElementById('pricingType').selectedOptions[0].text + '\n';
+                }
+
+                text += '─────────\n';
+
+                var quantities = [50, 100, 200, 500, 1000, 2000, 3000, 5000];
+
+                quantities.forEach(function(qty) {
+                    var oldQty = document.getElementById('standardQuantity').value;
+                    document.getElementById('standardQuantity').value = qty;
+
+                    var calc = calculateStandard();
+
+                    document.getElementById('standardQuantity').value = oldQty;
+
+                    var icon = qty <= 200 ? '🔴' : qty <= 1000 ? '🟠' : '🟢';
+                    var hot = qty >= 500 && qty <= 5000 ? ' 🔥' : '';
+
+                    text += icon + ' ' + qty + 'шт - ' + formatPrice(calc.unitPrice) + '₽ = ' +
+                        calc.totalPrice.toFixed(0) + '₽' + hot + '\n';
+                });
+
+                text += '──────────';
+
+                navigator.clipboard.writeText(text).then(function() {
+                    showToast('Скопировано в буфер обмена', 'success');
+                });
+            }
+
+            function addToCart() {
+                var productName = '';
+                var details = '';
+                var quantity = '';
+
+                if (currentProduct === 'standard') {
+                    var width = document.getElementById('itemWidth').value;
+                    var height = document.getElementById('itemHeight').value;
+                    var material = document.getElementById('material').selectedOptions[0].text;
+
+                    productName = 'Наклейки';
+                    details = width + '×' + height + 'мм, ' + material;
+                    quantity = document.getElementById('standardQuantity').value + 'шт';
+                } else if (currentProduct === '3d') {
+                    if (current3DType === 'standard') {
+                        var width3d = document.getElementById('3dWidth').value;
+                        var height3d = document.getElementById('3dHeight').value;
+                        var polymerType = document.getElementById('3dPolymer').value;
+                        var polymerName = polymerType === 'premium' ? 'Премиум полимер (гибкий)' : 'Стандарт полимер (твёрдый)';
+
+                        productName = '3D наклейки';
+                        details = width3d + '×' + height3d + 'мм, ' + polymerName;
+                        quantity = document.getElementById('3dQuantity').value + 'шт';
+                    } else {
+                        // Стикерпаки - детальная информация
+                        var substrateW = document.getElementById('substrateWidth').value;
+                        var substrateH = document.getElementById('substrateHeight').value;
+                        var polymerType = document.getElementById('packsPolymer').value;
+                        var polymerName = polymerType === 'premium' ? 'Премиум полимер' : 'Стандарт полимер';
+                        var packagingOpt = document.getElementById('packaging').value;
+                        var packagingText = packagingOpt === 'yes' ? ', Упаковка: Да' : '';
+
+                        productName = '3D Стикерпаки';
+
+                        // Собираем информацию о стикерах
+                        var stickersInfo = [];
+                        var stickerNum = 1;
+                        document.querySelectorAll('.sticker-item').forEach(function(item) {
+                            var w = item.querySelector('.sticker-width').value;
+                            var h = item.querySelector('.sticker-height').value;
+                            var count = item.querySelector('.sticker-count').value;
+                            stickersInfo.push('Стикер ' + stickerNum + ': ' + w + '×' + h + 'мм ×' + count + 'шт');
+                            stickerNum++;
+                        });
+
+                        details = 'Подложка: ' + substrateW + '×' + substrateH + 'мм, ' +
+                                  polymerName + ', ' +
+                                  stickersInfo.join(', ') +
+                                  packagingText;
+                        quantity = document.getElementById('packsQuantity').value + ' паков';
+                    }
+                } else if (currentProduct === 'oracal') {
+                    var widthOr = document.getElementById('oracalWidth').value;
+                    var heightOr = document.getElementById('oracalHeight').value;
+                    var type = document.getElementById('oracalType').selectedOptions[0].text;
+
+                    productName = 'Оракал';
+                    details = widthOr + '×' + heightOr + 'мм, ' + type;
+                    quantity = document.getElementById('oracalQuantity').value + 'шт';
+                }
+
+                var item = {
+                    name: productName,
+                    info: details,
+                    qty: quantity,
+                    unit: document.getElementById('unitPriceDisplay').textContent.replace('₽', '') + '₽',
+                    price: parseFloat(document.getElementById('totalPriceDisplay').textContent)
+                };
+
+                if (window.parent !== window) {
+                    window.parent.postMessage({type: 'addToCart', item: item}, '*');
+                }
+
+                showToast('Добавлено в корзину', 'success');
+            }
+
+            // Обработчики событий
+            document.querySelectorAll('.product-card').forEach(function(card) {
+                card.addEventListener('click', function() {
+                    selectProduct(this.dataset.product);
+                });
+            });
+
+            document.querySelectorAll('.sub-product-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    select3DType(this.dataset.subtype);
+                });
+            });
+
+            var standardSizePreset = document.getElementById('standardSizePreset');
+            if (standardSizePreset) {
+                standardSizePreset.addEventListener('change', handleStandardSizePreset);
+            }
+
+            var sizePreset3D = document.getElementById('3dSizePreset');
+            if (sizePreset3D) {
+                sizePreset3D.addEventListener('change', handle3DSizePreset);
+            }
+
+            var stickerpackPresetEl = document.getElementById('stickerpackPreset');
+            if (stickerpackPresetEl) {
+                stickerpackPresetEl.addEventListener('change', handleStickerpackPreset);
+            }
+
+            var packsPolymerEl = document.getElementById('packsPolymer');
+            if (packsPolymerEl) {
+                packsPolymerEl.addEventListener('change', function() {
+                    updatePolymerLabel();
+                    updateCalculation();
+                });
+            }
+
+            var addStickerBtn = document.getElementById('addStickerBtn');
+            if (addStickerBtn) {
+                addStickerBtn.addEventListener('click', addSticker);
+            }
+
+            var inputs = [
+                'itemWidth', 'itemHeight', 'standardQuantity', 'material', 'pricingType',
+                'standardSizePreset', 'customPriceStandard',
+                '3dWidth', '3dHeight', '3dQuantity', '3dPricingType', '3dPolymer',
+                '3dSizePreset', 'customPrice3D',
+                'substrateWidth', 'substrateHeight', 'packsQuantity',
+                'packsPricingType', 'packaging', 'stickerpackPreset', 'customPricePack',
+                'oracalWidth', 'oracalHeight', 'oracalQuantity', 'oracalType', 'customPriceOracal',
+                'customPrice', 'packsPolymer'
+            ];
+
+            inputs.forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', updateCalculation);
+                    el.addEventListener('change', updateCalculation);
+                }
+            });
+
+            document.querySelectorAll('.sticker-width, .sticker-height, .sticker-count').forEach(function(input) {
+                input.addEventListener('input', updateCalculation);
+            });
+
+            document.getElementById('cartBtn').addEventListener('click', addToCart);
+            document.getElementById('copyBtn').addEventListener('click', copyAllQuantities);
+
+            // Инициализация
+            document.getElementById('3dWidth').value = 30;
+            document.getElementById('3dHeight').value = 30;
+
+            var initialPreset = document.getElementById('standardSizePreset').value;
+            if (initialPreset === '50x50') {
+                document.getElementById('itemWidth').value = 50;
+                document.getElementById('itemHeight').value = 50;
+            }
+
+            updateCalculation();
+        });
+    </script>
+</body>
+</html>
