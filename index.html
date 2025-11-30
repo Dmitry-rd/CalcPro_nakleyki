@@ -221,6 +221,11 @@
             background: var(--surface-2);
         }
 
+        .param-input.error {
+            border-color: var(--danger);
+            background: #fff5f5;
+        }
+
         .sticker-item {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -290,6 +295,13 @@
             font-size: 10px;
             color: var(--text-muted);
             font-style: italic;
+            margin-top: 4px;
+        }
+
+        .error-note {
+            font-size: 10px;
+            color: var(--danger);
+            font-weight: 600;
             margin-top: 4px;
         }
 
@@ -370,6 +382,12 @@
             padding: 2px;
         }
 
+        .qty-extra {
+            font-size: 8px;
+            margin-top: 2px;
+            opacity: 0.8;
+        }
+
         .qty-discount {
             position: absolute;
             top: -5px;
@@ -384,7 +402,8 @@
 
         .qty-card.selected .qty-value,
         .qty-card.selected .qty-price,
-        .qty-card.selected .qty-total {
+        .qty-card.selected .qty-total,
+        .qty-card.selected .qty-extra {
             color: white;
         }
 
@@ -609,10 +628,12 @@
                     <div class="param-group">
                         <label class="param-label">Ширина, мм</label>
                         <input type="number" class="param-input" id="itemWidth" min="5" max="2000" value="50" placeholder="мм">
+                        <div class="info-note" id="sizeHintWidth"></div>
                     </div>
                     <div class="param-group">
                         <label class="param-label">Высота, мм</label>
                         <input type="number" class="param-input" id="itemHeight" min="5" max="2000" value="50" placeholder="мм">
+                        <div class="info-note" id="sizeHintHeight"></div>
                     </div>
                 </div>
             </div>
@@ -620,7 +641,7 @@
             <div class="params-section">
                 <div class="section-label">Тип расчета</div>
                 <div class="params-grid">
-                    <div class="param-group">
+                    <div class="param-group" id="pricingTypeGroup">
                         <label class="param-label">Тип расчёта</label>
                         <select class="param-input" id="pricingType">
                             <option value="retail">Розница (1200₽/лист)</option>
@@ -628,6 +649,14 @@
                             <option value="opt2">Опт2 (650₽/лист)</option>
                             <option value="opt3">Опт3 (550₽/лист)</option>
                             <option value="dynamic">Динамический</option>
+                        </select>
+                    </div>
+                    <div class="param-group" id="paperPricingTypeGroup" style="display: none;">
+                        <label class="param-label">Тип расчёта (Бумага)</label>
+                        <select class="param-input" id="paperPricingType">
+                            <option value="premium">Премиум (200₽/лист)</option>
+                            <option value="standard">Стандарт (150₽/лист)</option>
+                            <option value="economy">Эконом (120₽/лист)</option>
                         </select>
                     </div>
                     <div class="param-group">
@@ -934,8 +963,8 @@
 
             // Коэффициенты материалов
             var materialCoeff = {
-                mat: 1.0,        // Пленка матовая
-                gloss: 1.0,      // Пленка глянцевая
+                mat: 1.0,
+                gloss: 1.0,
                 transp: 1.15,
                 mat_gl_lam: 1.4,
                 transp_lam: 1.5,
@@ -951,6 +980,20 @@
                 1000: 600,
                 2000: 550,
                 5000: 500
+            };
+
+            // Параметры бумажной самоклейки
+            var paperSelfAdhesive = {
+                sheetWidth: 320,
+                sheetHeight: 450,
+                printWidth: 300,
+                printHeight: 405,
+                bleed: 1,  // 1мм с каждой стороны
+                prices: {
+                    premium: 200,
+                    standard: 150,
+                    economy: 120
+                }
             };
 
             // Цены на 3D полимеры
@@ -990,6 +1033,25 @@
                 setTimeout(function() {
                     toast.remove();
                 }, 2500);
+            }
+
+            // Обработка смены материала
+            function handleMaterialChange() {
+                var material = document.getElementById('material').value;
+                var isPaperSelf = material === 'paper_self';
+
+                var pricingTypeGroup = document.getElementById('pricingTypeGroup');
+                var paperPricingTypeGroup = document.getElementById('paperPricingTypeGroup');
+
+                if (isPaperSelf) {
+                    pricingTypeGroup.style.display = 'none';
+                    paperPricingTypeGroup.style.display = 'block';
+                } else {
+                    pricingTypeGroup.style.display = 'block';
+                    paperPricingTypeGroup.style.display = 'none';
+                }
+
+                updateCalculation();
             }
 
             // Обработчики выбора размеров
@@ -1212,12 +1274,101 @@
                 return dynamicPrices[5000];
             }
 
-            // Расчеты
-            function calculateStandard() {
+            // Расчет для бумажной самоклейки
+            function calculatePaperSelfAdhesive() {
                 var width = parseFloat(document.getElementById('itemWidth').value) || 50;
                 var height = parseFloat(document.getElementById('itemHeight').value) || 50;
                 var quantity = parseInt(document.getElementById('standardQuantity').value) || 100;
+                var paperPricingType = document.getElementById('paperPricingType').value;
+
+                // Размер с обрезом (1мм с каждой стороны = +2мм к каждому размеру)
+                var widthWithBleed = width + (paperSelfAdhesive.bleed * 2);
+                var heightWithBleed = height + (paperSelfAdhesive.bleed * 2);
+
+                // Валидация размеров
+                var widthInput = document.getElementById('itemWidth');
+                var heightInput = document.getElementById('itemHeight');
+                var sizeHintWidth = document.getElementById('sizeHintWidth');
+                var sizeHintHeight = document.getElementById('sizeHintHeight');
+
+                var isValid = true;
+
+                if (widthWithBleed > paperSelfAdhesive.printWidth) {
+                    widthInput.classList.add('error');
+                    sizeHintWidth.textContent = '⚠️ Превышает печатную область (' + paperSelfAdhesive.printWidth + 'мм)';
+                    sizeHintWidth.className = 'error-note';
+                    isValid = false;
+                } else {
+                    widthInput.classList.remove('error');
+                    sizeHintWidth.textContent = 'С обрезом: ' + widthWithBleed + 'мм';
+                    sizeHintWidth.className = 'info-note';
+                }
+
+                if (heightWithBleed > paperSelfAdhesive.printHeight) {
+                    heightInput.classList.add('error');
+                    sizeHintHeight.textContent = '⚠️ Превышает печатную область (' + paperSelfAdhesive.printHeight + 'мм)';
+                    sizeHintHeight.className = 'error-note';
+                    isValid = false;
+                } else {
+                    heightInput.classList.remove('error');
+                    sizeHintHeight.textContent = 'С обрезом: ' + heightWithBleed + 'мм';
+                    sizeHintHeight.className = 'info-note';
+                }
+
+                if (!isValid) {
+                    return {
+                        unitPrice: 0,
+                        totalPrice: 0,
+                        perSheet: 0,
+                        sheetsNeeded: 0
+                    };
+                }
+
+                // Сколько штук влезает на лист
+                var pcsPerWidth = Math.floor(paperSelfAdhesive.printWidth / widthWithBleed);
+                var pcsPerHeight = Math.floor(paperSelfAdhesive.printHeight / heightWithBleed);
+                var pcsPerSheet = pcsPerWidth * pcsPerHeight;
+
+                if (pcsPerSheet === 0) {
+                    return {
+                        unitPrice: 0,
+                        totalPrice: 0,
+                        perSheet: 0,
+                        sheetsNeeded: 0
+                    };
+                }
+
+                // Сколько листов нужно
+                var sheetsNeeded = Math.ceil(quantity / pcsPerSheet);
+
+                // Цена листа
+                var sheetPrice = paperSelfAdhesive.prices[paperPricingType];
+
+                // Общая стоимость
+                var totalPrice = sheetsNeeded * sheetPrice;
+                var pricePerUnit = roundUpToTenth(totalPrice / quantity);
+
+                return {
+                    unitPrice: pricePerUnit,
+                    totalPrice: totalPrice,
+                    perSheet: pcsPerSheet,
+                    sheetsNeeded: sheetsNeeded,
+                    sheetPrice: sheetPrice
+                };
+            }
+
+            // Расчеты
+            function calculateStandard() {
                 var material = document.getElementById('material').value;
+
+                // Если бумажная самоклейка - используем специальный расчет
+                if (material === 'paper_self') {
+                    return calculatePaperSelfAdhesive();
+                }
+
+                var width = parseFloat(document.getElementById('itemWidth').value) || 50;
+                var height = parseFloat(document.getElementById('itemHeight').value) || 50;
+                var quantity = parseInt(document.getElementById('standardQuantity').value) || 100;
                 var pricingType = document.getElementById('pricingType').value;
 
                 var area = (width * height) / 100;
@@ -1436,14 +1587,18 @@
                 var html = '';
 
                 var currentQuantity = parseInt(document.getElementById('standardQuantity').value) || 100;
-                var currentPricingType = document.getElementById('pricingType').value;
+                var material = document.getElementById('material').value;
+                var isPaperSelf = material === 'paper_self';
+                var currentPricingType = isPaperSelf ?
+                    document.getElementById('paperPricingType').value :
+                    document.getElementById('pricingType').value;
 
                 quantities.forEach(function(qty) {
                     var oldQty = document.getElementById('standardQuantity').value;
                     document.getElementById('standardQuantity').value = qty;
 
                     var calc;
-                    if (currentPricingType === 'dynamic') {
+                    if (!isPaperSelf && currentPricingType === 'dynamic') {
                         var oldPricing = document.getElementById('pricingType').value;
                         document.getElementById('pricingType').value = 'dynamic';
                         calc = calculateStandard();
@@ -1457,7 +1612,7 @@
                     var isSelected = qty === currentQuantity ? ' selected' : '';
 
                     var discount = '';
-                    if (currentPricingType === 'dynamic' && qty >= 100) {
+                    if (!isPaperSelf && currentPricingType === 'dynamic' && qty >= 100) {
                         var basePrice = 1200;
                         var currentSheetPrice = getDynamicSheetPrice(qty);
                         var saving = Math.round((1 - currentSheetPrice / basePrice) * 100);
@@ -1471,6 +1626,12 @@
                     html += '<div class="qty-value">' + qty + 'шт</div>';
                     html += '<div class="qty-price">' + formatPrice(calc.unitPrice) + '₽/шт</div>';
                     html += '<div class="qty-total">' + calc.totalPrice.toFixed(0) + '₽</div>';
+
+                    // Для бумажной самоклейки показываем количество листов
+                    if (isPaperSelf && calc.perSheet) {
+                        html += '<div class="qty-extra">' + calc.sheetsNeeded + ' листов (' + calc.perSheet + 'шт/лист)</div>';
+                    }
+
                     html += '</div>';
                 });
 
@@ -1498,12 +1659,18 @@
                 var width = document.getElementById('itemWidth').value;
                 var height = document.getElementById('itemHeight').value;
                 var material = document.getElementById('material').selectedOptions[0].text;
-                var pricingType = document.getElementById('pricingType').value;
+                var isPaperSelf = document.getElementById('material').value === 'paper_self';
+                var pricingType = isPaperSelf ?
+                    document.getElementById('paperPricingType').value :
+                    document.getElementById('pricingType').value;
 
                 var text = '📋 Наклейки ' + width + '×' + height + 'мм • ' + material + '\n';
 
-                if (pricingType === 'dynamic') {
+                if (!isPaperSelf && pricingType === 'dynamic') {
                     text += 'Расчёт: 👇\n';
+                } else if (isPaperSelf) {
+                    var priceTypeName = document.getElementById('paperPricingType').selectedOptions[0].text;
+                    text += priceTypeName + '\n';
                 } else {
                     text += document.getElementById('pricingType').selectedOptions[0].text + '\n';
                 }
@@ -1523,8 +1690,13 @@
                     var icon = qty <= 200 ? '🔴' : qty <= 1000 ? '🟠' : '🟢';
                     var hot = qty >= 500 && qty <= 5000 ? ' 🔥' : '';
 
+                    var extraInfo = '';
+                    if (isPaperSelf && calc.perSheet) {
+                        extraInfo = ' (' + calc.sheetsNeeded + 'л)';
+                    }
+
                     text += icon + ' ' + qty + 'шт - ' + formatPrice(calc.unitPrice) + '₽ = ' +
-                        calc.totalPrice.toFixed(0) + '₽' + hot + '\n';
+                            calc.totalPrice.toFixed(0) + '₽' + extraInfo + hot + '\n';
                 });
 
                 text += '──────────';
@@ -1628,6 +1800,11 @@
                 standardSizePreset.addEventListener('change', handleStandardSizePreset);
             }
 
+            var materialSelect = document.getElementById('material');
+            if (materialSelect) {
+                materialSelect.addEventListener('change', handleMaterialChange);
+            }
+
             var sizePreset3D = document.getElementById('3dSizePreset');
             if (sizePreset3D) {
                 sizePreset3D.addEventListener('change', handle3DSizePreset);
@@ -1652,7 +1829,7 @@
             }
 
             var inputs = [
-                'itemWidth', 'itemHeight', 'standardQuantity', 'material', 'pricingType',
+                'itemWidth', 'itemHeight', 'standardQuantity', 'material', 'pricingType', 'paperPricingType',
                 'standardSizePreset', 'customPriceStandard',
                 '3dWidth', '3dHeight', '3dQuantity', '3dPricingType', '3dPolymer',
                 '3dSizePreset', 'customPrice3D',
