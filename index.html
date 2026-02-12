@@ -644,19 +644,19 @@
                     <div class="param-group" id="pricingTypeGroup">
                         <label class="param-label">Тип расчёта</label>
                         <select class="param-input" id="pricingType">
-                            <option value="retail">Розница (1200₽/лист)</option>
-                            <option value="opt1">Опт1 (850₽/лист)</option>
-                            <option value="opt2">Опт2 (650₽/лист)</option>
-                            <option value="opt3">Опт3 (550₽/лист)</option>
+                            <option value="retail">Розница (1300₽/лист)</option>
+                            <option value="opt1">Опт1 (900₽/лист)</option>
+                            <option value="opt2">Опт2 (700₽/лист)</option>
+                            <option value="opt3">Опт3 (600₽/лист)</option>
                             <option value="dynamic">Динамический</option>
                         </select>
                     </div>
                     <div class="param-group" id="paperPricingTypeGroup" style="display: none;">
                         <label class="param-label">Тип расчёта (Бумага)</label>
                         <select class="param-input" id="paperPricingType">
-                            <option value="premium">Розница (200₽/лист)</option>
-                            <option value="standard">Опт 1 (150₽/лист)</option>
-                            <option value="economy">Опт 2 (120₽/лист)</option>
+                            <option value="premium">Розница (210₽/лист)</option>
+                            <option value="standard">Опт 1 (160₽/лист)</option>
+                            <option value="economy">Опт 2 (130₽/лист)</option>
                         </select>
                     </div>
                     <div class="param-group">
@@ -766,8 +766,8 @@
                         <div class="param-group">
                             <label class="param-label">Полимер для стикеров</label>
                             <select class="param-input" id="packsPolymer">
-                                <option value="premium">Премиум полимер (5₽/см²)</option>
-                                <option value="standard">Стандарт полимер (3.5₽/см²)</option>
+                                <option value="premium">Премиум полимер (5.25₽/см²)</option>
+                                <option value="standard">Стандарт полимер (3.7₽/см²)</option>
                             </select>
                         </div>
                     </div>
@@ -788,7 +788,7 @@
                 </div>
 
                 <div class="params-section" id="customStickersSection" style="display: none;">
-                    <div class="section-label" id="stickersPolymerLabel">Стикеры на подложке (Премиум полимер - 5₽/см²)</div>
+                    <div class="section-label" id="stickersPolymerLabel">Стикеры на подложке (Премиум полимер - 5.25₽/см²)</div>
                     <div id="stickersContainer">
                         <div class="sticker-item">
                             <div class="sticker-item-header">
@@ -955,10 +955,10 @@
 
             // Цены на листы для стандартных наклеек
             var sheetPrices = {
-                retail: 1200,
-                opt1: 850,
-                opt2: 650,
-                opt3: 550
+                retail: 1300,
+                opt1: 900,
+                opt2: 700,
+                opt3: 600
             };
 
             // Коэффициенты материалов
@@ -973,13 +973,13 @@
 
             // Динамические цены
             var dynamicPrices = {
-                50: 1200,
-                100: 1000,
-                200: 850,
-                500: 700,
-                1000: 600,
-                2000: 550,
-                5000: 500
+                50: 1300,
+                100: 1100,
+                200: 900,
+                500: 750,
+                1000: 650,
+                2000: 600,
+                5000: 550
             };
 
             // Параметры бумажной самоклейки
@@ -990,22 +990,22 @@
                 printHeight: 405,
                 bleed: 1,  // 1мм с каждой стороны
                 prices: {
-                    premium: 200,
-                    standard: 150,
-                    economy: 120
+                    premium: 210,
+                    standard: 160,
+                    economy: 130
                 }
             };
 
             // Цены на 3D полимеры
             var pricing3D = {
-                premium: 5.0,
-                standard: 3.5
+                premium: 5.25,
+                standard: 3.7
             };
 
             // Цены на оракал
             var pricingOracal = {
-                'with-print': 0.25,
-                'without-print': 0.15
+                'with-print': 0.28,
+                'without-print': 0.17
             };
 
             // Утилиты
@@ -1441,7 +1441,7 @@
                     // Подложка
                     var substrateArea = (substrateWidth * substrateHeight) / 100;
                     var sheetArea = 6000;
-                    var substratePricePerCm2 = 1200 / sheetArea;
+                    var substratePricePerCm2 = 1300 / sheetArea;
                     var substratePrice = substrateArea * substratePricePerCm2;
 
                     // Стикеры с выбранным полимером
@@ -1466,7 +1466,7 @@
                         stickerIndex++;
                     });
 
-                    var packagingPrice = packagingOption === 'yes' ? 15 : 0;
+                    var packagingPrice = packagingOption === 'yes' ? 16 : 0;
                     var priceBeforeDiscount = substratePrice + totalStickerPrice + packagingPrice;
                     var pricePerUnit = priceBeforeDiscount * (1 - packDiscount / 100);
                     pricePerUnit = roundUpToHalf(pricePerUnit);
@@ -1613,7 +1613,7 @@
 
                     var discount = '';
                     if (!isPaperSelf && currentPricingType === 'dynamic' && qty >= 100) {
-                        var basePrice = 1200;
+                        var basePrice = 1300;
                         var currentSheetPrice = getDynamicSheetPrice(qty);
                         var saving = Math.round((1 - currentSheetPrice / basePrice) * 100);
                         if (saving > 0) {
